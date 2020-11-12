@@ -5,6 +5,7 @@ from typing import List, Optional
 from pydfs_lineup_optimizer.utils import process_percents
 from pydfs_lineup_optimizer.tz import get_timezone
 
+from pydfs_lineup_optimizer.player_printer import BasePlayerPrinter, PlayerPrinter
 
 GameInfo = namedtuple('GameInfo', ['home_team', 'away_team', 'starts_at', 'game_started'])
 
@@ -55,12 +56,17 @@ class Player:
         self.fppg_floor = fppg_floor
         self.fppg_ceil = fppg_ceil
         self._original_positions = original_positions
-
+        self._lineup_count = 0
+        self.printer = PlayerPrinter()
+        
     def __repr__(self):
         return '%s %s (%s)' % (self.full_name, '/'.join(self.positions), self.team)
 
     def __hash__(self):
         return hash(self.id)
+    
+    def __str__(self):
+        return self.printer.print_player(self)
 
     @property
     def max_exposure(self) -> Optional[float]:
@@ -101,7 +107,15 @@ class Player:
     @projected_ownership.setter
     def projected_ownership(self, projected_ownership: Optional[float]):
         self._projected_ownership = process_percents(projected_ownership)
-
+    
+    @property
+    def projected_points(self) -> float:
+        return self.fppg
+    
+    @projected_points.setter
+    def projected_points(self, projected_points: float):
+        self.fppg = projected_points
+    
     @property
     def full_name(self) -> str:
         return '{} {}'.format(self.first_name, self.last_name)
@@ -110,6 +124,10 @@ class Player:
     def efficiency(self) -> float:
         return round(self.fppg / self.salary, 6)
 
+    @property 
+    def lineup_count(self) -> float:
+        return self._lineup_count
+    
     @property
     def is_game_started(self) -> bool:
         if self.game_info:
@@ -124,6 +142,9 @@ class Player:
     @property
     def original_positions(self) -> List[str]:
         return self._original_positions or self.positions
+    
+    def added_to_lineup(self):
+        self._lineup_count = self._lineup_count + 1
 
 
 class LineupPlayer:

@@ -55,7 +55,7 @@ class DraftKingsFootballSettings(DraftKingsSettings):
         LineupPosition('WR', ('WR',)),
         LineupPosition('WR', ('WR',)),
         LineupPosition('TE', ('TE',)),
-        LineupPosition('FLEX', ('WR', 'RB', 'TE')),
+        LineupPosition('FLEX', ('WR', 'RB')),
         LineupPosition('DST', ('DST',))
     ]
 

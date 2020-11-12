@@ -39,7 +39,7 @@ class YahooFootballSettings(YahooSettings):
         LineupPosition('RB', ('RB', )),
         LineupPosition('RB', ('RB', )),
         LineupPosition('TE', ('TE', )),
-        LineupPosition('FLEX', ('WR', 'RB', 'TE')),
+        LineupPosition('FLEX', ('WR', 'RB')),
         LineupPosition('DEF', ('DEF', ))
     ]
 

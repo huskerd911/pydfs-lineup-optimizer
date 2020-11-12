@@ -12,7 +12,7 @@ class BaseLineupPrinter:
 
 class LineupPrinter(BaseLineupPrinter):
     OUTPUT_FORMAT = '{index:>2}. {lineup_position:<5} {name:<30}{positions:<6}{team:<15}{game:<9}' \
-                    '{fppg:<15}{salary:<10}\n'
+                    '{fppg:<15}{salary:<10}{exp:<5}\n'
 
     def _print_game_info(self, player: 'LineupPlayer') -> str:
         game_info = player.game_info
@@ -30,7 +30,7 @@ class LineupPrinter(BaseLineupPrinter):
             game=self._print_game_info(player),
             fppg=round(player.fppg, 3) if player.used_fppg is None else
             '%s(%s)' % (round(player.fppg, 3), round(player.used_fppg, 3)),
-            salary=str(player.salary) + '$',
+            salary=str(player.salary) + '$', exp=player.lineup_count,
         )
 
     def _print_footer(self, lineup: 'Lineup') -> str:

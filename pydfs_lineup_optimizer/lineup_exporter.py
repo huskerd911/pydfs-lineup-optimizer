@@ -62,3 +62,8 @@ class YahooCSVLineupExporter(CSVLineupExporter):
     @staticmethod
     def render_player(player: 'LineupPlayer') -> str:
         return str(player.id)
+    
+class FanDuelCSVLineupExporter(CSVLineupExporter):
+    @staticmethod
+    def render_player(player: 'LineupPlayer') -> str:
+        return str(player.id)

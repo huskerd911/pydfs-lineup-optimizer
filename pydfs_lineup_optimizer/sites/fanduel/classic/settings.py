@@ -4,6 +4,7 @@ from pydfs_lineup_optimizer.constants import Sport, Site
 from pydfs_lineup_optimizer.sites.sites_registry import SitesRegistry
 from pydfs_lineup_optimizer.lineup_printer import IndividualSportLineupPrinter
 from pydfs_lineup_optimizer.rules import OptimizerRule, FanduelBaseballRosterRule
+from pydfs_lineup_optimizer.lineup_exporter import FanDuelCSVLineupExporter
 from pydfs_lineup_optimizer.sites.fanduel.classic.importer import FanDuelCSVImporter, FanDuelLOLCSVImporter, \
     FanDuelMVPCSVImporter
 
@@ -14,6 +15,7 @@ class FanDuelSettings(BaseSettings):
     max_from_one_team = 4  # type: Optional[int]
     min_teams = 3  # type: Optional[int]
     csv_importer = FanDuelCSVImporter
+    csv_exporter = FanDuelCSVLineupExporter
 
 
 @SitesRegistry.register_settings
@@ -43,7 +45,7 @@ class FanDuelFootballSettings(FanDuelSettings):
         LineupPosition('WR', ('WR', )),
         LineupPosition('WR', ('WR', )),
         LineupPosition('TE', ('TE', )),
-        LineupPosition('FLEX', ('RB', 'WR', 'TE')),
+        LineupPosition('FLEX', ('RB', 'WR')),
         LineupPosition('DEF', ('D', )),
     ]
 

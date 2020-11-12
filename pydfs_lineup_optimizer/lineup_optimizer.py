@@ -15,7 +15,7 @@ from pydfs_lineup_optimizer.rules import *
 from pydfs_lineup_optimizer.stacks import BaseGroup, TeamStack, PositionsStack, BaseStack, Stack
 from pydfs_lineup_optimizer.context import OptimizationContext
 from pydfs_lineup_optimizer.statistics import Statistic
-from pydfs_lineup_optimizer.exposure_strategy import BaseExposureStrategy, TotalExposureStrategy
+from pydfs_lineup_optimizer.exposure_strategy import BaseExposureStrategy, TotalExposureStrategy, AfterEachExposureStrategy
 
 
 BASE_RULES = {TotalPlayersRule, LineupBudgetRule, PositionsRule, MaxFromOneTeamRule, LockedPlayersRule,
@@ -93,7 +93,7 @@ class LineupOptimizer:
     @property
     def players(self) -> List[Player]:
         return [player for player in self._players if player not in self.removed_players]
-
+    
     @property
     def locked_players(self) -> List[Player]:
         return self._lineup
@@ -344,7 +344,7 @@ class LineupOptimizer:
             raise LineupOptimizerException('Maximum number of teams is %d' % total_players)
         self.total_teams = total_teams
 
-    def add_players_group(self, group: BaseGroup) -> None:
+    def add_player_group(self, group: BaseGroup) -> None:
         stack = Stack(groups=[group])
         self.stacks.append(stack)
 
@@ -368,6 +368,7 @@ class LineupOptimizer:
             with_injured: bool = False,
             exposure_strategy: Type[BaseExposureStrategy] = TotalExposureStrategy,
     ) -> Generator[Lineup, None, None]:
+        print("in Optimize")
         players = [player for player in self.players if player.max_exposure is None or player.max_exposure > 0]
         context = OptimizationContext(
             total_lineups=n,
@@ -406,6 +407,7 @@ class LineupOptimizer:
                     player = variables_dict.get(solved_variable)
                     if player:
                         lineup_players.append(player)
+                        player.added_to_lineup()
                     variables_names.append(solved_variable.name)
                 lineup = self._build_lineup(lineup_players, context)
                 previous_lineup = lineup
@@ -415,11 +417,16 @@ class LineupOptimizer:
                     return
                 for constraint in constraints:
                     constraint.post_optimize(variables_names)
+                self.last_context = context
             except SolverException:
-                raise LineupOptimizerException('Can\'t generate lineups')
-        self.last_context = context
+                print('Stopping at {} lineups'.format(len(context.lineups)))
+                break
+                pass
+                
+            
 
     def optimize_lineups(self, lineups: List[Lineup]):
+        print("in Optimize_lineups")
         players = [player for player in self.players if player.max_exposure is None or player.max_exposure > 0]
         context = OptimizationContext(
             total_lineups=len(lineups),
@@ -457,14 +464,17 @@ class LineupOptimizer:
                 generated_lineup = self._build_lineup(lineup_players, context, unswappable_players)
                 previous_lineup = generated_lineup
                 context.add_lineup(lineup)
+                self.last_context = context
                 yield generated_lineup
                 if len(self.locked_players) == self.total_players:
                     return
                 for constraint in constraints:
                     constraint.post_optimize(variables_names)
             except SolverException:
-                raise LineupOptimizerException('Can\'t generate lineups')
-        self.last_context = context
+                print('Stopping at {} lineups'.format(len(context.lineups)))
+                break
+                pass
+                
 
     def print_statistic(self) -> None:
         if self.last_context is None:
@@ -473,7 +483,7 @@ class LineupOptimizer:
 
     def export(self, filename: str) -> None:
         if self.last_context is None:
-            raise LineupOptimizerException('You should generate lineups before printing statistic')
+            raise LineupOptimizerException('You should generate lineups before exporting')
         self.settings.csv_exporter(self.last_context.lineups).export(filename)
 
     def _build_lineup(
